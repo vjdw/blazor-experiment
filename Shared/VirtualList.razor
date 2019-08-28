@@ -1,0 +1,84 @@
+﻿@typeparam TItem
+@inject IJSRuntime JSRuntime
+
+<h1>Counter</h1>
+
+<div @ref="scrollContainer" @ref:suppressField style="height: 300px; position: relative; overflow: auto;" @onscroll="HandleScroll">
+    <div style="height: @(rowHeight*Items.Count())px; width: 1px; position: absolute; top: 0; left: 0;"></div>
+
+    @foreach (var virtualRow in VirtualRows)
+    {
+        <div style="height: 150px; width: 30px; background-color: gray; position: absolute; top: @(virtualRow.Top)px; left: 0;">@RowTemplate(virtualRow.Item)</div>
+    }
+</div>
+
+@foreach (var x in Enumerable.Range(1,10))
+{
+    <p>@x scrollTop: @currentCount</p>
+}
+
+<button class="btn btn-primary" @onclick="IncrementCount">Click me</button>
+
+@code {
+    class VirtualRow
+    {
+        int rowHeight = 150;
+        public TItem Item { get; set; }
+        public int Index { get; set; }
+        public int Top => Index * rowHeight;
+        public int Bottom => Top + rowHeight;
+    }
+
+    LinkedList<VirtualRow> VirtualRows = new LinkedList<VirtualRow>();
+
+    [Parameter]
+    public RenderFragment<TItem> RowTemplate { get; set; }
+
+    [Parameter]
+    public IList<TItem> Items { get; set; }
+
+    ElementReference scrollContainer;
+    int currentCount = 0;
+    int virtualRowCount = 10;
+    int virtualRowOffset = 0;
+    int rowHeight = 150;
+
+    protected override void OnParametersSet()
+    {
+        for (int i = 0; i < virtualRowCount; i++)
+        {
+            VirtualRows.AddLast(new VirtualRow {Item = Items[i], Index = i});
+        }
+    }
+
+    async Task IncrementCount()
+    {
+        currentCount+=10;
+        await JSRuntime.InvokeAsync<int>("blazorHelpers.setScrollTop", scrollContainer, currentCount);
+    }
+
+    async Task HandleScroll(UIEventArgs args)
+    {
+        var scrollTop = await JSRuntime.InvokeAsync<int>("blazorHelpers.getScrollTop", scrollContainer);
+        var scrollTopMax = await JSRuntime.InvokeAsync<int>("blazorHelpers.getScrollTopMax", scrollContainer);
+        var scrollHeight = await JSRuntime.InvokeAsync<int>("blazorHelpers.getScrollHeight", scrollContainer);
+
+        currentCount = scrollTop;
+
+        if (VirtualRows.First.Value.Top < scrollTop)
+        {
+            virtualRowOffset++;
+            VirtualRows.RemoveFirst();
+            int j = VirtualRows.Count() - 1;
+            int itemsOffset = virtualRowOffset + j;
+            VirtualRows.AddLast(new VirtualRow {Item = Items[itemsOffset], Index = itemsOffset});
+        }
+        else if (VirtualRows.Last.Value.Bottom > scrollTop + (scrollHeight - scrollTopMax))
+        {
+            virtualRowOffset--;
+            VirtualRows.RemoveLast();
+            int itemsOffset = virtualRowOffset;
+            VirtualRows.AddFirst(new VirtualRow {Item = Items[itemsOffset], Index = itemsOffset});
+        }
+    }
+}

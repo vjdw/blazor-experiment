@@ -9,9 +9,9 @@ using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using blazortest.Data;
+using blazor_experiment.Data;
 
-namespace blazortest
+namespace blazor_experiment
 {
     public class Startup
     {
@@ -40,7 +40,7 @@ namespace blazortest
             }
             else
             {
-                app.UseExceptionHandler("/Home/Error");
+                app.UseExceptionHandler("/Error");
                 // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
                 app.UseHsts();
             }
@@ -53,7 +53,6 @@ namespace blazortest
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapBlazorHub();
-                //endpoints.MapBlazorHub<App>(selector: "app");
                 endpoints.MapFallbackToPage("/_Host");
             });
         }

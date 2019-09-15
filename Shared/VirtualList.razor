@@ -1,9 +1,10 @@
 ﻿@typeparam TItem
 @inject IJSRuntime JSRuntime
+@using Microsoft.AspNetCore.Components.Web
 
 <h1>Counter</h1>
 
-<div @ref="scrollContainer" @ref:suppressField style="height: 300px; position: relative; overflow: auto;" @onscroll="HandleScroll">
+<div @ref="scrollContainer" style="height: 300px; position: relative; overflow: auto;" @onscroll="HandleScroll">
     <div style="height: @(rowHeight*Items.Count())px; width: 1px; position: absolute; top: 0; left: 0;"></div>
 
     @foreach (var virtualRow in VirtualRows)
@@ -57,7 +58,7 @@
         await JSRuntime.InvokeAsync<int>("blazorHelpers.setScrollTop", scrollContainer, currentCount);
     }
 
-    async Task HandleScroll(UIEventArgs args)
+    async Task HandleScroll(EventArgs args)
     {
         var scrollTop = await JSRuntime.InvokeAsync<int>("blazorHelpers.getScrollTop", scrollContainer);
         var scrollTopMax = await JSRuntime.InvokeAsync<int>("blazorHelpers.getScrollTopMax", scrollContainer);

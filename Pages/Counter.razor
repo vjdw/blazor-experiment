@@ -1,8 +1,16 @@
 ﻿@page "/counter"
 
+@using blazor_experiment.Data
+@inject AssetService AssetService
+
 <h1>Counter</h1>
 
 <p>Current count: @currentCount</p>
+
+@foreach (var asset in assets)
+{
+    <p>@asset.Path</p>
+}
 
 <button class="btn btn-primary" @onclick="IncrementCount">Click me</button>
 
@@ -17,16 +25,23 @@
 
     class Row
     {
-        public string PetId { get; set; } = "unset";
-        public string Name { get; set; } = "unser";
+        public string PetId { get; set; }
+        public string Name { get; set; }
     }
 
     IList<Row> Rows = new List<Row>();
 
+    Asset[] assets;
+
+    protected override async Task OnInitializedAsync()
+    {
+        assets = await AssetService.GetAssets();
+    }
+
     protected override void OnParametersSet()
     {
         for (int i = 0; i < 1000; i++)
-            Rows.Add(new Row {PetId = $"x{i.ToString()}", Name = $"y{i.ToString()}"});
+            Rows.Add(new Row {PetId = $"{i.ToString()}", Name = $"{i.ToString()}"});
     }
 
     int currentCount = 0;

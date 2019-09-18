@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using LiteDB;
 using blazor_experiment.Data;
 
 namespace blazor_experiment
@@ -29,6 +30,12 @@ namespace blazor_experiment
             services.AddRazorPages();
             services.AddServerSideBlazor();
             services.AddSingleton<WeatherForecastService>();
+
+            var db = new LiteDatabase(@"MyData.db");
+            var repo = new Repository(db);
+            var assetService = new AssetService(repo);
+
+            services.AddSingleton<AssetService>(assetService);
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

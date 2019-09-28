@@ -2,8 +2,6 @@
 @inject IJSRuntime JSRuntime
 @using Microsoft.AspNetCore.Components.Web
 
-<h1>Counter</h1>
-
 <div @ref="scrollContainer" style="height: 300px; position: relative; overflow: auto;" @onscroll="HandleScroll">
     <div style="height: @(rowHeight*Items.Count())px; width: 1px; position: absolute; top: 0; left: 0;"></div>
 
@@ -12,11 +10,6 @@
         <div style="height: 150px; width: 30px; background-color: gray; position: absolute; top: @(virtualRow.Top)px; left: 0;">@RowTemplate(virtualRow.Item)</div>
     }
 </div>
-
-@foreach (var x in Enumerable.Range(1,10))
-{
-    <p>@x scrollTop: @currentCount</p>
-}
 
 <button class="btn btn-primary" @onclick="IncrementCount">Click me</button>
 

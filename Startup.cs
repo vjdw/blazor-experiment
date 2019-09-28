@@ -31,11 +31,11 @@ namespace blazor_experiment
             services.AddServerSideBlazor();
             services.AddSingleton<WeatherForecastService>();
 
-            var db = new LiteDatabase(@"MyData.db");
-            var repo = new Repository(db);
-            var assetService = new AssetService(repo);
+            //var db = new LiteDatabase(@"MyData.db");
+            //var repo = new Repository(db);
+            //var assetService = new AssetService(repo);
 
-            services.AddSingleton<AssetService>(assetService);
+            //services.AddSingleton<AssetService>(assetService);
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

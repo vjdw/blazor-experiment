@@ -36,12 +36,13 @@
     protected override async Task OnInitializedAsync()
     {
         assets = await AssetService.GetAssets();
+        AssetService.Changed += AssetService_Changed;
     }
 
     protected override void OnParametersSet()
     {
         for (int i = 0; i < 1000; i++)
-            Rows.Add(new Row {PetId = $"{i.ToString()}", Name = $"{i.ToString()}"});
+            Rows.Add(new Row { PetId = $"{i.ToString()}", Name = $"{i.ToString()}" });
     }
 
     int currentCount = 0;
@@ -49,5 +50,14 @@
     void IncrementCount()
     {
         currentCount++;
+    }
+
+    private void AssetService_Changed(object sender, EventArgs e)
+    {
+        this.InvokeAsync(async () =>
+        {
+            assets = await AssetService.GetAssets();
+            base.StateHasChanged();
+        });
     }
 }

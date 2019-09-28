@@ -26,5 +26,10 @@ namespace blazor_experiment.Data
         {
             return db.GetCollection<Asset>("assets").FindAll();
         }
+
+        public void DeleteAllAssets()
+        {
+            db.DropCollection("assets");
+        }
     }
 }

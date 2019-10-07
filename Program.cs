@@ -30,6 +30,7 @@ namespace blazor_experiment
             return Host.CreateDefaultBuilder(args)
                 .ConfigureWebHostDefaults(webBuilder =>
                 {
+                    webBuilder.ConfigureServices(services => services.AddSingleton(repository));
                     webBuilder.ConfigureServices(services => services.AddSingleton(assetService));
                     webBuilder.UseStartup<Startup>();
                 })

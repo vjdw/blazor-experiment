@@ -30,6 +30,7 @@ namespace blazor_experiment
             services.AddRazorPages();
             services.AddServerSideBlazor();
             services.AddSingleton<WeatherForecastService>();
+            services.AddControllers();
 
             //var db = new LiteDatabase(@"MyData.db");
             //var repo = new Repository(db);
@@ -60,6 +61,7 @@ namespace blazor_experiment
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapBlazorHub();
+                endpoints.MapControllers();
                 endpoints.MapFallbackToPage("/_Host");
             });
         }

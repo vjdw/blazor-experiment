@@ -5,6 +5,10 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.Processing;
+using SixLabors.ImageSharp.PixelFormats;
+using SixLabors.ImageSharp.Formats.Jpeg;
 
 namespace blazor_experiment.Data
 {
@@ -12,6 +16,7 @@ namespace blazor_experiment.Data
     {
         private static Repository _repository;
         private static FileSystemWatcher _watcher;
+        private static Queue<FileSystemEventArgs> _newFileQueue;
 
         public event EventHandler Changed;
 
@@ -55,15 +60,41 @@ namespace blazor_experiment.Data
 
         private void File_Created(object sender, FileSystemEventArgs e)
         {
-            ProcessFile(e.Name, e.FullPath);
+            try
+            {
+                _newFileQueue.Enqueue(e);  // TODO: do something with this
+                ProcessFile(e.Name, e.FullPath);
+            }
+            catch (IOException)
+            {
+                // Add to queue for processing later?
+            }
         }
+
+
 
         private void ProcessFile(string fileName, string filePath)
         {
             if (filePath.EndsWith(".jpg", StringComparison.InvariantCultureIgnoreCase))
             {
+                Thumbnail thumbnail;
+                using (Image<Rgba32> image = Image.Load(filePath))
+                {
+                    image.Mutate(x => x
+                         .Resize(image.Width / 16, image.Height / 16)
+                         .Grayscale());
+                    //image.Save("bar.jpg"); // Automatic encoder selected based on extension.
+                    using (var ms = new MemoryStream())
+                    {
+                        image.Save(ms, JpegFormat.Instance);
+                        thumbnail = new Thumbnail { Raw = ms.ToArray() };
+                    }
+                }
+
                 var asset = new Asset { Path = fileName };
-                _repository.AddAsset(asset);
+                thumbnail.AssetGuid = asset.Guid;
+
+                _repository.AddAsset(asset, thumbnail);
                 if (Changed != null)
                     Changed.Invoke(asset, new EventArgs());
             }

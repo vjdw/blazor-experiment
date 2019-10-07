@@ -1,5 +1,7 @@
 ﻿@page "/counter"
 
+@implements IDisposable
+
 @using blazor_experiment.Data
 @inject AssetService AssetService
 
@@ -10,6 +12,7 @@
 @foreach (var asset in assets)
 {
     <p>@asset.Path</p>
+    <img src="/api/asset/thumbnail/@asset.Guid" />
 }
 
 <button class="btn btn-primary" @onclick="IncrementCount">Click me</button>
@@ -59,5 +62,10 @@
             assets = await AssetService.GetAssets();
             base.StateHasChanged();
         });
+    }
+
+    public void Dispose()
+    {
+        AssetService.Changed -= AssetService_Changed;
     }
 }

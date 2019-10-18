@@ -39,7 +39,7 @@
 
     protected override void OnParametersSet()
     {
-        for (int i = 0; i < virtualRowCount; i++)
+        for (int i = 0; i < Math.Min(virtualRowCount, Items.Count); i++)
         {
             VirtualRows.AddLast(new VirtualRow {Item = Items[i], Index = i});
         }

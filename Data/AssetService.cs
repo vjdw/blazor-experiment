@@ -62,7 +62,7 @@ namespace blazor_experiment.Data
         {
             try
             {
-                _newFileQueue.Enqueue(e);  // TODO: do something with this
+                //_newFileQueue.Enqueue(e);  // TODO: do something with this
                 ProcessFile(e.Name, e.FullPath);
             }
             catch (IOException)

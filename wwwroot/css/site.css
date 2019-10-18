@@ -111,6 +111,11 @@ app {
     color: red;
 }
 
+.thumbnail-container {
+    width: 150px;
+    height: 150px;
+}
+
 @media (max-width: 767.98px) {
     .main .top-row {
         display: none;

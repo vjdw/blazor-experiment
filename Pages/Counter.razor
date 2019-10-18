@@ -9,30 +9,18 @@
 
 <p>Current count: @currentCount</p>
 
-@foreach (var asset in assets)
-{
-    <p>@asset.Path</p>
-    <img src="/api/asset/thumbnail/@asset.Guid" />
-}
-
 <button class="btn btn-primary" @onclick="IncrementCount">Click me</button>
 
-<VirtualList Items="@Rows" TItem="Row">
+<VirtualList Items="@assets" TItem="Asset">
     <RowTemplate>
-        <p>@context.PetId</p>
-        <p>@context.Name</p>
+        <div class="thumbnail-container">
+            <p>@context.Path</p>
+            <img src="/api/asset/thumbnail/@context.Guid" />
+        </div>
     </RowTemplate>
 </VirtualList>
 
 @code {
-
-    class Row
-    {
-        public string PetId { get; set; }
-        public string Name { get; set; }
-    }
-
-    IList<Row> Rows = new List<Row>();
 
     Asset[] assets;
 
@@ -44,8 +32,8 @@
 
     protected override void OnParametersSet()
     {
-        for (int i = 0; i < 1000; i++)
-            Rows.Add(new Row { PetId = $"{i.ToString()}", Name = $"{i.ToString()}" });
+        //for (int i = 0; i < 1000; i++)
+        //    Rows.Add(new Row { PetId = $"{i.ToString()}", Name = $"{i.ToString()}" });
     }
 
     int currentCount = 0;

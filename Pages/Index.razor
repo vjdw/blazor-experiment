@@ -1,5 +1,46 @@
 ﻿@page "/"
 
-<h1>Hello, world!</h1>
+@implements IDisposable
 
-Welcome to your new app.
+@using blazor_experiment.Data
+@inject AssetService AssetService
+
+<VirtualList Items="@assets" TItem="Asset" RowHeightPx="150">
+    <RowTemplate>
+        <div class="thumbnail-container">
+            @*<p>@context.Path</p>*@
+            <img style="height: 150px;" src="/api/asset/thumbnail/@context.Guid" />
+        </div>
+    </RowTemplate>
+</VirtualList>
+
+@code {
+
+    Asset[] assets;
+
+    protected override async Task OnInitializedAsync()
+    {
+        assets = await AssetService.GetAssets();
+        AssetService.Changed += AssetService_Changed;
+    }
+
+    protected override void OnParametersSet()
+    {
+        //for (int i = 0; i < 1000; i++)
+        //    Rows.Add(new Row { PetId = $"{i.ToString()}", Name = $"{i.ToString()}" });
+    }
+
+    private void AssetService_Changed(object sender, EventArgs e)
+    {
+        this.InvokeAsync(async () =>
+        {
+            assets = await AssetService.GetAssets();
+            base.StateHasChanged();
+        });
+    }
+
+    public void Dispose()
+    {
+        AssetService.Changed -= AssetService_Changed;
+    }
+}

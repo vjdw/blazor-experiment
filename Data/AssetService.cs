@@ -1,6 +1,5 @@
 using Microsoft.Extensions.Hosting;
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -9,6 +8,7 @@ using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Processing;
 using SixLabors.ImageSharp.PixelFormats;
 using SixLabors.ImageSharp.Formats.Jpeg;
+using System.Collections.Concurrent;
 
 namespace blazor_experiment.Data
 {
@@ -16,7 +16,9 @@ namespace blazor_experiment.Data
     {
         private static Repository _repository;
         private static FileSystemWatcher _watcher;
-        private static Queue<FileSystemEventArgs> _newFileQueue;
+
+        private Task _mediaProcessorTask;
+        private ConcurrentQueue<string> _mediaSourceQueue = new ConcurrentQueue<string>();
 
         public event EventHandler Changed;
 
@@ -41,9 +43,11 @@ namespace blazor_experiment.Data
         {
             var watchPath = @"C:\Users\vince\Desktop\scratch";
 
+            _mediaProcessorTask = Task.Run(async () => await MediaProcessor());
+
             foreach (var file in new DirectoryInfo(watchPath).GetFiles("*", SearchOption.AllDirectories))
             {
-                ProcessFile(file.Name, file.FullName);
+                _mediaSourceQueue.Enqueue(file.FullName);
             }
 
             _watcher = new FileSystemWatcher(watchPath);
@@ -60,30 +64,44 @@ namespace blazor_experiment.Data
 
         private void File_Created(object sender, FileSystemEventArgs e)
         {
-            try
+            _mediaSourceQueue.Enqueue(e.FullPath);
+        }
+
+        private async Task MediaProcessor()
+        {
+            while (true)
             {
-                //_newFileQueue.Enqueue(e);  // TODO: do something with this
-                ProcessFile(e.Name, e.FullPath);
-            }
-            catch (IOException)
-            {
-                // Add to queue for processing later?
+                if (_mediaSourceQueue.TryDequeue(out var imagePath))
+                {
+                    try
+                    {
+                        ProcessImage(imagePath);
+                    }
+                    catch (IOException)
+                    {
+                        // Retry later
+                        _mediaSourceQueue.Enqueue(imagePath);
+                    }
+                }
+                else
+                {
+                    await Task.Delay(1000);
+                }
             }
         }
 
-
-
-        private void ProcessFile(string fileName, string filePath)
+        private void ProcessImage(string imagePath)
         {
-            if (filePath.EndsWith(".jpg", StringComparison.InvariantCultureIgnoreCase))
+            if (imagePath.EndsWith(".jpg", StringComparison.InvariantCultureIgnoreCase)
+                && !_repository.AssetExists(imagePath))
             {
                 Thumbnail thumbnail;
-                using (Image<Rgba32> image = Image.Load(filePath))
+                using (Image<Rgba32> image = Image.Load(imagePath))
                 {
                     image.Mutate(x => x
                          .Resize(image.Width / 16, image.Height / 16)
                          .Grayscale());
-                    //image.Save("bar.jpg"); // Automatic encoder selected based on extension.
+
                     using (var ms = new MemoryStream())
                     {
                         image.Save(ms, JpegFormat.Instance);
@@ -91,7 +109,7 @@ namespace blazor_experiment.Data
                     }
                 }
 
-                var asset = new Asset { Path = fileName };
+                var asset = new Asset { Path = imagePath };
                 thumbnail.AssetGuid = asset.Guid;
 
                 _repository.AddAsset(asset, thumbnail);

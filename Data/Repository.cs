@@ -12,13 +12,17 @@ namespace blazor_experiment.Data
         public Repository(LiteDatabase db)
         {
             this.db = db;
-            //AddAsset(new Asset {Path="cat"});
-            //AddAsset(new Asset {Path="dog"});
             var assets = db.GetCollection<Asset>("assets");
             assets.EnsureIndex(_ => _.Path);
 
             var thumbnails = db.GetCollection<Thumbnail>("thumbnails");
             thumbnails.EnsureIndex(_ => _.AssetGuid);
+        }
+
+        public bool AssetExists(string path)
+        {
+            var assets = db.GetCollection<Asset>("assets");
+            return assets.Exists(_ => _.Path == path);
         }
 
         public void AddAsset(Asset asset, Thumbnail thumbnail)
@@ -43,6 +47,7 @@ namespace blazor_experiment.Data
         public byte[] GetThumbnail(string assetGuid)
         {
             var thumbnails = db.GetCollection<Thumbnail>("thumbnails");
+
             return thumbnails.FindOne(_ => _.AssetGuid == assetGuid).Raw;
         }
     }
